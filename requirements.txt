@@ -1,0 +1,15 @@
+transformers
+huggingface_hub
+langchain
+bitsandbytes
+accelerate
+xformers
+einops
+scrubadub
+regex
+numpy
+matplotlib
+math
+opencv-python
+pypdf
+gradio
