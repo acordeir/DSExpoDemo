@@ -7,31 +7,41 @@ Original file is located at
     https://colab.research.google.com/drive/16WmcCr5RIpymkubeX46C5mPoEFoC_1ku
 """
 
-!pip install transformers
-!pip install huggingface_hub
-!pip install langchain
-!pip install bitsandbytes accelerate xformers einops
 
 from huggingface_hub import notebook_login
 
 #My API key which has access to Llama2 models: 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
-notebook_login()
+#notebook_login()
 
 import torch
 import transformers
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import pipeline
+import locale
+import scrubadub
+import nltk
+nltk.download('punkt')
+import regex as re
+import textwrap
+from langchain import HuggingFacePipeline
+from langchain import PromptTemplate,  LLMChain
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+from pypdf import PdfReader
+
+
 
 tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
-                                          use_auth_token=True)
+                                         token = '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')
 
 model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
                                              device_map='auto',
                                              torch_dtype=torch.float16,
-                                             use_auth_token=True
-                                             )
+                                             token = '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')
 
 # Use a pipeline for later
-from transformers import pipeline
 
 '''
 summarize_pipe = pipeline("summarization",
@@ -52,7 +62,6 @@ generation_pipe = pipeline("text-generation",
                 eos_token_id=tokenizer.eos_token_id
                 )
 
-import textwrap
 
 B_INST, E_INST = "[INST]", "[/INST]"
 B_SYS, E_SYS = "<<SYS>>\n", "\n<</SYS>>\n\n"
@@ -60,7 +69,6 @@ DEFAULT_SYSTEM_PROMPT = """\
 You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
 
 If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information."""
-
 
 
 def get_prompt(instruction, new_system_prompt=DEFAULT_SYSTEM_PROMPT ):
@@ -72,8 +80,6 @@ def parse_text(text):
         wrapped_text = textwrap.fill(text, width=100)
         print(wrapped_text +'\n\n')
 
-from langchain import HuggingFacePipeline
-from langchain import PromptTemplate,  LLMChain
 
 #summarize_llm = HuggingFacePipeline(pipeline = summarize_pipe, model_kwargs = {'temperature':0.1})
 generation_llm = HuggingFacePipeline(pipeline = generation_pipe, model_kwargs = {'temperature':0.1})
@@ -94,15 +100,6 @@ generation_llm_chain = LLMChain(prompt=generation_prompt, llm=generation_llm)
 
 """## Text Cleaner"""
 
-import locale
-locale.getpreferredencoding = lambda: "UTF-8"
-!pip install scrubadub
-
-import scrubadub
-import nltk
-nltk.download('punkt')
-import regex as re
-
 def privatize_text(text):
   #Phone numbers
   phone_pattern = '^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$'
@@ -122,12 +119,6 @@ def privatize_text(text):
 
 """## Image Privatize"""
 
-!pip install opencv-python
-
-import cv2
-import matplotlib.pyplot as plt
-import numpy as np
-import math
 
 def privatize_img(image):
   #Used as reference: https://huggingface.co/spaces/sciling/Face_and_Plate_License_Blur/tree/main/models
@@ -190,10 +181,6 @@ def plotImages(img):
 
 """## PDF Reader"""
 
-!pip install pypdf
-
-from pypdf import PdfReader
-
 
 def preview_text(file):
   reader = PdfReader(file)
@@ -240,8 +227,6 @@ def upload(file_name):
   return file_name, text
 
 """## Gradio App"""
-
-!pip install gradio
 
 import gradio as gr
 
